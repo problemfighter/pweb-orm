@@ -1,5 +1,6 @@
+import contextvars
 from abc import ABC, abstractmethod
-from flask import g, current_app, request
+from flask import g, request
 
 
 class PWebSaaSConst:
@@ -13,26 +14,31 @@ class PWebSaaSTenantResolver(ABC):
         pass
 
 
+tenant_key_context_var = contextvars.ContextVar("tenant_key", default=None)
+
+
 class PWebSaaS:
     tenantResolver: PWebSaaSTenantResolver = None
 
     @staticmethod
     def init_tenant_key(tenant_key=None):
-        if tenant_key:
-            return tenant_key
-        elif PWebSaaS.tenantResolver:
-            tenant_key = PWebSaaS.tenantResolver.get_tenant_key()
+        try:
+            if tenant_key:
+                return tenant_key
+            elif PWebSaaS.tenantResolver:
+                tenant_key = PWebSaaS.tenantResolver.get_tenant_key()
 
-        if tenant_key:
-            PWebSaaS.set_tenant_key(tenant_key)
-
+            if tenant_key:
+                PWebSaaS.set_tenant_key(tenant_key)
+        except:
+            pass
         return tenant_key
 
     @staticmethod
     def set_tenant_key(key: str):
         g.pweb_saas = {PWebSaaSConst.TENANT_KEY: key}
         if PWebSaaS.is_background_request():
-            current_app.add_to_context_data(key=PWebSaaSConst.TENANT_KEY, value=key)
+            tenant_key_context_var.set(key)
 
     @staticmethod
     def is_background_request() -> bool:
@@ -48,5 +54,5 @@ class PWebSaaS:
             return g.pweb_saas[PWebSaaSConst.TENANT_KEY]
         tenant_key = None
         if PWebSaaS.is_background_request():
-            tenant_key = current_app.get_context_data(key=PWebSaaSConst.TENANT_KEY)
+            tenant_key = tenant_key_context_var.get()
         return PWebSaaS.init_tenant_key(tenant_key=tenant_key)
