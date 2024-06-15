@@ -1,6 +1,6 @@
 import contextvars
 from abc import ABC, abstractmethod
-from flask import g, request
+from flask import request
 
 
 class PWebSaaSConst:
@@ -36,9 +36,7 @@ class PWebSaaS:
 
     @staticmethod
     def set_tenant_key(key: str):
-        g.pweb_saas = {PWebSaaSConst.TENANT_KEY: key}
-        if PWebSaaS.is_background_request():
-            tenant_key_context_var.set(key)
+        tenant_key_context_var.set(key)
 
     @staticmethod
     def is_background_request() -> bool:
@@ -50,9 +48,5 @@ class PWebSaaS:
 
     @staticmethod
     def get_tenant_key():
-        if "pweb_saas" in g and PWebSaaSConst.TENANT_KEY in g.pweb_saas:
-            return g.pweb_saas[PWebSaaSConst.TENANT_KEY]
-        tenant_key = None
-        if PWebSaaS.is_background_request():
-            tenant_key = tenant_key_context_var.get()
+        tenant_key = tenant_key_context_var.get()
         return PWebSaaS.init_tenant_key(tenant_key=tenant_key)
