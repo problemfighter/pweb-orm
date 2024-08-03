@@ -1,8 +1,6 @@
 import contextvars
-import threading
 from abc import ABC, abstractmethod
 from flask import request, g
-from ppy_common import Console
 from saas.common.saas_excception import SaaSException
 
 
@@ -61,5 +59,4 @@ class PWebSaaS:
             tenant_key = g.pweb_saas[PWebSaaSConst.TENANT_KEY]
         elif PWebSaaS.is_background_request():
             tenant_key = tenant_key_context_var.get()
-        Console.log(f"Existing Tenant Key: {tenant_key} Name: {threading.current_thread().name} ID: {threading.get_ident()}")
         return PWebSaaS.init_tenant_key(tenant_key=tenant_key)
