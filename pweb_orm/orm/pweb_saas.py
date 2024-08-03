@@ -2,6 +2,7 @@ import contextvars
 from abc import ABC, abstractmethod
 from flask import request
 
+from ppy_common import Console
 from saas.common.saas_excception import SaaSException
 
 
@@ -53,4 +54,5 @@ class PWebSaaS:
     @staticmethod
     def get_tenant_key():
         tenant_key = tenant_key_context_var.get()
+        Console.log(f"Existing Tenant Key: {tenant_key}")
         return PWebSaaS.init_tenant_key(tenant_key=tenant_key)
