@@ -1,4 +1,5 @@
 import contextvars
+import threading
 from abc import ABC, abstractmethod
 from flask import request
 
@@ -54,5 +55,5 @@ class PWebSaaS:
     @staticmethod
     def get_tenant_key():
         tenant_key = tenant_key_context_var.get()
-        Console.log(f"Existing Tenant Key: {tenant_key}")
+        Console.log(f"Existing Tenant Key: {tenant_key} Name: {threading.current_thread().name} ID: {threading.get_ident()}")
         return PWebSaaS.init_tenant_key(tenant_key=tenant_key)
