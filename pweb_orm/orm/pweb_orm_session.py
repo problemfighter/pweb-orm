@@ -14,7 +14,9 @@ class PWebORMSession(Session):
             return bind
 
         engines = self._db.engines
-        saas_bind_key = PWebSaaS.get_tenant_key()
+        saas_bind_key = None
+        if not self._is_bind_key(mapper.local_table):
+            saas_bind_key = PWebSaaS.get_tenant_key()
 
         if mapper is not None:
             try:
@@ -39,6 +41,20 @@ class PWebORMSession(Session):
             return engines[saas_bind_key]
 
         return super().get_bind(mapper=mapper, clause=clause, bind=bind, kwargs=kwargs)
+
+    def _is_bind_key(self, clause: sa.ClauseElement):
+        table = None
+        if clause is not None:
+            if isinstance(clause, sa.Table):
+                table = clause
+            elif isinstance(clause, sa.UpdateBase) and isinstance(clause.table, sa.Table):
+                table = clause.table
+
+        if table is not None and "bind_key" in table.metadata.info:
+            key = table.metadata.info["bind_key"]
+            if key:
+                return True
+        return False
 
     def _clause_to_engine(self, clause: sa.ClauseElement | None, engines: t.Mapping[str | None, sa.engine.Engine], saas_bind_key=None) -> sa.engine.Engine | None:
         """If the clause is a table, return the engine associated with the table's metadata's bind key. """
