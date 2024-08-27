@@ -1,7 +1,6 @@
 import contextvars
 from abc import ABC, abstractmethod
 from flask import request, g
-from saas.common.saas_excception import SaaSException
 
 
 class PWebSaaSConst:
@@ -31,7 +30,7 @@ class PWebSaaS:
 
             if tenant_key:
                 PWebSaaS.set_tenant_key(tenant_key)
-        except SaaSException as e:
+        except Exception as e:
             raise e
         except:
             pass
